@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 import time
+from selenium import *
 from selenium import webdriver
 from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
@@ -32,15 +33,23 @@ html = BeautifulSoup(chrome.page_source, 'lxml')
 div0 = 'PlaceListBody_listGroup__LddQf'
 div1 = 'PlaceListBody_itemGroup__1V8Q3 PlaceListBody_textUnitList__HEDb3'
 div2 = 'PlaceListItemText_container__fUIgA text-unit'
-i=0
 
-for i in range(1,4,1):
-    chrome.find_element(By.CLASS_NAME, f'{div0} div:nth-child({i}) a').click()
-    time.sleep(1)
+i=1
+while True:
+    try:
+        chrome.find_element(By.CLASS_NAME, f'{div0} div:nth-child({i}) a').click()
+        time.sleep(2)
 
-    chrome.find_element(By.CLASS_NAME, 'css-1i028dt').click()
-    time.sleep(1)
+        chrome.find_element(By.CLASS_NAME, 'css-1i028dt').click()
+        time.sleep(2)
+        i+=1
+    except Exception as e:
+        i = 1
+        break
 
 
-print(len(html.select(f'div.{div1}')))
+print(len(chrome.find_element(By.CLASS_NAME, f'{div0}')))
 print(f'{div1} div:nth-child(3) a')
+
+
+print(html.select(f'strong.PlaceListTitle_text__2511B'))
