@@ -1,0 +1,98 @@
+import time
+import json
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from webdriver_manager.chrome import ChromeDriverManager
+
+url = 'https://www.yanolja.com/motel/r-900646?lat=37.50681&lng=127.06624&advert=AREA&topAdvertiseMore=0&sort=133&placeListType=motel&pathDivision=r-900646'
+
+# 웹드라이버 초기화
+options = webdriver.ChromeOptions()
+options.add_argument("start-maximized")
+services = Service(ChromeDriverManager().install())
+chrome = webdriver.Chrome(service=services, options=options)
+
+# URL 로드
+chrome.get(url)
+
+
+
+def infinite_scroll(chrome, timeout=2):
+    last_height = chrome.execute_script("return document.body.scrollHeight")
+    while True:
+        chrome.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        time.sleep(timeout)
+        new_height = chrome.execute_script("return document.body.scrollHeight")
+        if new_height == last_height:
+            break
+        last_height = new_height
+
+infinite_scroll(chrome)
+
+i=0
+
+div0 = 'PlaceListBody_listGroup__LddQf'
+mname = 'PlaceListTitle_container__qe7XH PlaceListTitle_text_2511B'
+mname2='.css-11vo59c .css-t9rim1'    #모텔 상세페이지 모텔명
+
+score = '.css-14zx4vh .css-1czpws0:nth-child({i}) '  # 친절도/청결도/편의성/비품만족도
+maddr = '.css-dps5x9 .css-o8j33g'
+detail_score = '.css-nq91ht div strong'  # 평균평점
+#review_date = '.css-3i0g4q .css-nkytaw .css-k59gj9 .css-1fd7prz span:nth-child(1)'
+review = '.css-3i0g4q .css-nkytaw'  # 후기
+
+
+data_list = []
+
+try:
+    motel_names = [element.text for element in chrome.find_elements(By.CSS_SELECTOR, mname)]
+    print("All Motel Names:", motel_names)
+
+    items = chrome.find_elements(By.CSS_SELECTOR, f'{div0} div a')
+
+    for item in items:
+        try:
+            item.click()
+            time.sleep(1)
+
+            # 크롤링
+            motel_name_detail = chrome.find_element(By.CSS_SELECTOR, mname2).text
+            motel_review = chrome.find_element(By.CSS_SELECTOR, review).text
+            motel_address = chrome.find_element(By.CSS_SELECTOR, maddr).text
+            motel_detail_score = chrome.find_element(By.CSS_SELECTOR, detail_score).text
+            # motel_review_date = chrome.find_element(By.CSS_SELECTOR, review_date).text
+
+            scores = []
+            for i in range(1, 5):  # 예를 들어 4가지 score가 있다고 가정합니다.
+                try:
+                    score_selector = f'.css-14zx4vh .css-1czpws0:nth-child({i})'
+                    score_text = chrome.find_element(By.CSS_SELECTOR, score_selector).text
+                    scores.append(score_text)
+                except:
+                    scores.append(None)
+
+            data = {
+                'Name': motel_name_detail,
+                'Review': motel_review,
+                'Score': scores,
+                'Address': motel_address,
+                'Detail Score': motel_detail_score
+                # 'Review Date': motel_review_date  # 주석 처리한 review_date를 사용하고 싶다면 이 부분을 주석 해제하세요.
+            }
+            print(data)
+            data_list.append(data)
+
+            chrome.back()
+            time.sleep(1)
+        except Exception as inner_e:
+            print(f"Error occurred while processing an item: {inner_e}")
+
+# Save data to JSON
+    try:
+        with open('C:\\java\\motel_data.json', 'w', encoding='utf-8') as f:
+            json.dump(data_list, f, ensure_ascii=False, indent=4)
+    except Exception as outer_e:
+            print(f"Error occurred while saving to JSON: {outer_e}")
+
+chrome.quit()
