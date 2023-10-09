@@ -32,23 +32,36 @@ html = BeautifulSoup(chrome.page_source, 'lxml')
 
 div0 = 'PlaceListBody_listGroup__LddQf'
 div1 = 'PlaceListBody_itemGroup__1V8Q3 PlaceListBody_textUnitList__HEDb3'
-div2 = 'PlaceListItemText_container__fUIgA text-unit'
+div2 = 'PlaceListItemText_container__fUIgA'
+
+
 
 i=1
-while True:
+
+review_sep = []
+while i<5: # 숙소개수만큼 반복
     try:
-        chrome.find_element(By.CLASS_NAME, f'{div0} div:nth-child({i}) a').click()
+        chrome.find_element(By.CLASS_NAME, f'{div0} div:nth-child({i}) a').click() # 상세페이지 들어가기
         time.sleep(2)
 
-        chrome.find_element(By.CLASS_NAME, 'css-1i028dt').click()
+        print(chrome.find_element(By.CLASS_NAME, 'css-t9rim1').text) # 숙소명
+        time.sleep(2)
+        chrome.find_element(By.CLASS_NAME, 'css-1iizn56 button:nth-child(2)').click() # 위치버튼 클릭
+        time.sleep(2)
+        print(chrome.find_element(By.CLASS_NAME, 'css-o8j33g div').text) # 숙소위치
+        chrome.find_element(By.CLASS_NAME, 'css-1iizn56 button:nth-child(5)').click() # 후기 클릭
+        time.sleep(2)
+        print(chrome.find_element(By.CLASS_NAME, 'css-nq91ht div strong').text) # 리뷰전체평점
+
+        chrome.find_element(By.CLASS_NAME, 'css-1i028dt').click() # 상세페이지 뒤로가기
         time.sleep(2)
         i+=1
-    except Exception as e:
+    except Exception as e: # 더 이상 들어갈 상세페이지가 없으면 종료
         i = 1
         break
 
 
-print(len(chrome.find_element(By.CLASS_NAME, f'{div0}')))
+print(len(html.select(f'.{div2}')))
 print(f'{div1} div:nth-child(3) a')
 
 
