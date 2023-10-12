@@ -111,7 +111,7 @@ while True: # 숙소개수만큼 반복
         # 리뷰가 20개 미만인 경우 크롤링 종료
         if len(reviews) < 20:
             print('리뷰가 20개 미만입니다. 크롤링을 종료합니다.')
-            break
+            
 
         motel_info['후기'] =  reviews
         print(reviews)  # 리뷰(텍스트)
